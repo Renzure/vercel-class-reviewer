@@ -1,0 +1,743 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Reviewer Shelf</title>
+<meta name="theme-color" content="#7c3aed">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#fff;--card:#fff;--ink:#0b0b0f;--mute:#6b6478;--line:#e4dcf5;--edge:#0b0b0f;--acc:#7c3aed;--acc-ink:#fff;--hi:#d8c4ff}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#09090b;--card:#131318;--ink:#f5f3ff;--mute:#a49db8;--line:#2b2640;--edge:#a78bfa;--acc:#a78bfa;--acc-ink:#0b0b0f;--hi:#6d28d9}}
+:root[data-theme="dark"]{--bg:#09090b;--card:#131318;--ink:#f5f3ff;--mute:#a49db8;--line:#2b2640;--edge:#a78bfa;--acc:#a78bfa;--acc-ink:#0b0b0f;--hi:#6d28d9}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden;background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px}
+main{max-width:1080px;margin:0 auto;padding:28px 18px 80px}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:end;justify-content:space-between;margin-bottom:22px;background:#0b0b0f;color:#fff;border:2px solid var(--edge);border-radius:20px;padding:26px 26px 22px}
+h1{font-size:clamp(2.2rem,7vw,3.6rem);line-height:1;margin:0;font-weight:800;letter-spacing:-.03em}
+h1 span{background:linear-gradient(transparent 58%,#7c3aed 58% 92%,transparent 92%);padding:0 .1em}
+.sub{color:#c9c2dd;margin:8px 0 0}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{border:1.5px solid var(--edge);background:var(--card);padding:9px 15px;border-radius:10px;cursor:pointer}
+.btn.pri{background:#7c3aed;color:#fff;border-color:#fff;font-weight:600;box-shadow:3px 3px 0 #fff}
+.btn.sm{padding:5px 10px;font-size:.88rem}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}.hbtns .btn:not(.pri){background:transparent;color:#fff;border-color:#fff}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.stat{border:1px solid #ffffff55;border-radius:99px;padding:3px 13px;font-size:.9rem}.stat b{color:#c4b5fd}.stat.on{background:#7c3aed;border-color:#7c3aed}
+.bar{border-bottom-color:var(--edge)!important;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}.tools input{flex:1 1 220px;padding:11px 14px;border-radius:10px;border:1.5px solid var(--edge);background:var(--card)}
+#q{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:13px center;background-size:18px;padding-left:40px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.chip{border:1px solid var(--line);background:transparent;border-radius:99px;padding:5px 13px;cursor:pointer;font-size:.92rem}.chip[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}.chip small{opacity:.65;margin-left:3px}
+.group{border:2px solid var(--edge);border-radius:16px;background:color-mix(in srgb,var(--c) 8%,var(--card));margin-bottom:22px;overflow:hidden}
+.gh{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;background:#0b0b0f;color:#fff}.gh .btn{background:transparent;color:#fff;border-color:#fff}
+.tog{flex:1;display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;font-weight:800;font-size:1.2rem;text-align:left;cursor:pointer;padding:6px 8px;border-radius:8px;min-width:0}.gt::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c);margin-right:9px}.gt{overflow-wrap:anywhere}.gc{font-weight:600;font-size:.82rem;border:1px solid #ffffff80;border-radius:99px;padding:1px 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:14px}
+.item{background:var(--card);border:1.5px solid var(--edge);border-left:10px solid var(--c,var(--acc));border-radius:6px 14px 14px 6px;padding:15px 16px;display:flex;flex-direction:column;gap:8px;transition:transform .15s,box-shadow .15s}
+.item:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--acc)}
+.item h3{margin:0;font-size:1.15rem;line-height:1.25}.meta{font-size:.85rem;color:var(--mute);display:flex;gap:6px;flex-wrap:wrap}.item p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.96rem}.item p.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.item a.open{display:inline-block;background:color-mix(in srgb,var(--c) 14%,transparent);padding:6px 11px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:.92rem;overflow-wrap:anywhere}.item a.open:hover{background:color-mix(in srgb,var(--c) 26%,transparent)}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:start}.pin{border:0;background:none;font-size:1.25rem;line-height:1;cursor:pointer;color:var(--mute);padding:2px 4px;border-radius:6px}.pin[aria-pressed="true"]{color:var(--acc)}
+.acts{display:flex;gap:6px;margin-top:auto;padding-top:6px;flex-wrap:wrap}.acts .btn.sm{border-color:var(--line);background:transparent}
+.pill{border:1.5px solid var(--edge);border-radius:99px;padding:0 9px;font-weight:600;color:var(--ink);font-size:.78rem}
+.empty{border:2px dashed var(--acc);border-radius:14px;padding:40px 20px;text-align:center;color:var(--mute);background:var(--card)}.big{display:block;font-size:1.4rem;color:var(--ink);margin-bottom:6px}.none{margin:0;padding:16px 18px;color:var(--mute)}
+dialog{border:2px solid var(--edge);border-radius:16px;background:var(--card);color:var(--ink);width:min(520px,92vw);padding:22px;box-shadow:8px 8px 0 var(--acc)}dialog::backdrop{background:rgba(10,20,28,.55);backdrop-filter:blur(3px)}
+dialog h2{font-size:1.5rem;letter-spacing:-.02em}label{display:block;font-weight:600;font-size:.92rem;margin:12px 0 4px}dialog input,dialog select,dialog textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg)}textarea{min-height:130px;resize:vertical}.row{display:flex;gap:10px}.row>div{flex:1}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.auth{max-width:400px;margin:24px auto;background:var(--card);border:2px solid var(--edge);border-radius:16px;padding:24px;box-shadow:8px 8px 0 var(--acc)}.auth h2{margin:0 0 6px;font-size:1.6rem;letter-spacing:-.02em}.auth input{width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--edge);background:var(--bg)}.auth .btn.pri{width:100%;margin-top:18px;padding:11px}.auth .err{background:color-mix(in srgb,#dc2626 14%,transparent);border:1px solid #dc2626;border-radius:8px;padding:8px 10px;margin:10px 0 0}.auth .note{background:color-mix(in srgb,var(--acc) 14%,transparent);border:1px solid var(--acc);border-radius:8px;padding:8px 10px;margin:10px 0 0}.linkbtn{background:none;border:0;color:var(--acc);cursor:pointer;margin-top:14px;padding:0;font:inherit;font-weight:600;text-decoration:underline}
+#acct{margin-left:auto;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}footer{margin-top:36px;color:var(--mute);font-size:.88rem;display:flex;gap:10px;flex-wrap:wrap;align-items:center}.locked .bar,.locked .hbtns,.locked .fab,.locked footer{display:none}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20;display:flex;gap:10px;align-items:center;max-width:92vw}#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}#toast .btn{background:transparent;color:inherit;border-color:currentColor}
+.fab{display:none;position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;border:0;background:var(--acc);color:var(--acc-ink);font-size:2rem;line-height:1;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer;z-index:6}
+@media(max-width:640px){main{padding:14px 14px 120px}header{padding:18px;border-radius:16px;gap:12px}.hbtns{width:100%}.hbtns .btn{flex:1}.stats{margin-top:10px;flex-wrap:nowrap;overflow-x:auto}.stat{white-space:nowrap}.tools{flex-wrap:nowrap}.tools input{flex:1 1 auto;min-width:0}.tools select{flex:0 0 auto;max-width:132px}.btn,.chip{min-height:42px}.btn.sm{min-height:40px;padding:6px 12px}.chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.chip{white-space:nowrap}.cards{grid-template-columns:1fr;gap:12px;padding:12px}.acts .btn{flex:1}.gh{padding:6px 8px;flex-wrap:wrap}.tog{font-size:1.1rem;min-height:44px;flex:1 1 55%}.pin{font-size:1.6rem;min-width:44px;min-height:44px;margin:-8px -8px 0 0}.fab{display:block}#add{display:none}#toast{bottom:92px;width:calc(100% - 28px);justify-content:space-between}dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:92dvh;overflow:auto;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:none;border-bottom:0}.row{flex-direction:column;gap:0}.foot{position:sticky;bottom:-1px;background:var(--card);padding-top:10px}.foot .btn{flex:1}footer{flex-direction:column;align-items:stretch}footer .btn{width:100%}#acct{margin-left:0}.auth{margin:8px auto;padding:20px;box-shadow:5px 5px 0 var(--acc)}}
+@media(hover:none){.item:hover{transform:none;box-shadow:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <h1>My <span>Reviewer</span> Shelf</h1>
+    <p class="sub">One shelf for everything you study, sorted by subject.</p>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="hbtns">
+    <button class="btn" id="addsub">Add subject</button>
+    <button class="btn pri" id="add">Add reviewer</button>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="tools">
+    <input id="q" type="search" placeholder="Search reviewers  ( press / )" aria-label="Search reviewers">
+    <select id="sort" class="btn" aria-label="Sort">
+      <option value="new">Newest first</option>
+      <option value="az">Title A–Z</option>
+      <option value="subj">Subject A–Z</option>
+    </select>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Filter by subject"></div>
+</div>
+
+<div id="grid"></div>
+
+<footer>
+  <span>Saved to your account and available on all your devices.</span>
+  <span class="hint"><kbd>/</kbd> search · <kbd>N</kbd> new · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> save</span>
+  <button class="btn sm" id="exp">Export backup</button>
+  <button class="btn sm" id="imp">Import backup</button>
+  <input type="file" id="file" accept=".json,application/json" hidden>
+  <span id="acct"></span>
+</footer>
+</main>
+
+<button class="fab" id="fab" aria-label="Add reviewer">+</button>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dlg">
+<form method="dialog" id="form">
+  <h2 id="dt" style="margin:0 0 4px">Add reviewer</h2>
+  <label for="f-title">Title</label>
+  <input id="f-title" required maxlength="120" placeholder="e.g. Midterm – Anatomy">
+  <div class="row">
+    <div><label for="f-subj">Subject</label><input id="f-subj" required maxlength="40" list="subjs" placeholder="e.g. Anatomy"><datalist id="subjs"></datalist></div>
+    <div><label for="f-type">Type</label><select id="f-type"><option>Notes</option><option>Link</option><option>File</option><option>Flashcards</option></select></div>
+  </div>
+  <label for="f-link">Link (Google Drive, Notion, PDF, etc.)</label>
+  <input id="f-link" type="url" placeholder="https://">
+  <label for="f-body">Notes</label>
+  <textarea id="f-body" placeholder="Paste or type your reviewer here"></textarea>
+  <label for="f-tags">Tags (comma separated)</label>
+  <input id="f-tags" placeholder="midterm, chapter 3">
+  <div class="foot"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn pri">Save reviewer</button></div>
+</form>
+</dialog>
+
+<dialog id="sdlg">
+<form method="dialog" id="sform">
+  <h2 style="margin:0 0 4px">Add subject</h2>
+  <label for="s-name">Subject name</label>
+  <input id="s-name" required maxlength="40" placeholder="e.g. Biology">
+  <div class="foot"><button type="button" class="btn" id="scancel">Cancel</button><button type="submit" class="btn pri">Add subject</button></div>
+</form>
+</dialog>
+
+<dialog id="pdlg">
+<form method="dialog" id="pform">
+  <h2 style="margin:0 0 4px">Change password</h2>
+  <label for="p-cur" id="p-curl">Current password</label>
+  <input id="p-cur" type="password" autocomplete="current-password">
+  <label for="p-new">New password (8 or more characters)</label>
+  <input id="p-new" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
+  <div class="foot"><button type="button" class="btn" id="pcancel">Cancel</button><button type="submit" class="btn pri">Change password</button></div>
+</form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/*
+===========================================================
+SUPABASE SETUP
+===========================================================
+1. Open Supabase -> your project -> Project Settings -> API.
+2. Copy the Project URL.
+3. Copy the Publishable key (or legacy anon key).
+4. Paste them below.
+5. Do NOT paste a service_role/secret key here.
+===========================================================
+*/
+window.SHELF_CONFIG = {
+  url: "https://kngpfourljwldnrgyidc.supabase.co",
+  key: "sb_publishable_ccj_8j0DJBU3slZpbH9e0Q_l8xl4TEr"
+};
+</script>
+
+<script>
+(function(){
+"use strict";
+
+var KEY="reviewer-shelf-v1";
+var CK="reviewer-shelf-collapsed";
+var subjects=[],collapsed={},items=[],filter="All",editId=null;
+var COLORS=["#7c3aed","#a855f7","#5b21b6","#c084fc","#6d28d9","#9333ea","#8b5cf6","#b794f6"];
+var $=function(id){return document.getElementById(id)};
+var view="loading",gate="Loading your shelf…",note="",me="",mode="login",pending=0,sb=null,uid="",recovering=false;
+var tt;
+
+function msg(er){return er&&er.message?er.message:"Something went wrong."}
+
+function toast(m,undo){
+  var t=$("toast");
+  t.innerHTML=esc(m)+(undo?' <button class="btn sm" id="undo">Undo</button>':"");
+  t.classList.add("show");
+  if(undo)$("undo").onclick=function(){undo();t.classList.remove("show")};
+  clearTimeout(tt);
+  tt=setTimeout(function(){t.classList.remove("show")},5000);
+}
+
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function color(s){
+  var h=0;
+  s=String(s||"");
+  for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
+  return COLORS[h%COLORS.length];
+}
+
+function hl(text,q){
+  var t=esc(text||"");
+  if(!q)return t;
+  var re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig");
+  return t.replace(re,"<mark>$1</mark>");
+}
+
+function safeUrl(u){
+  return /^https?:\/\//i.test(u||"")?(u||""):"";
+}
+
+function host(u){
+  try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return "link"}
+}
+
+function loadLocal(){
+  try{collapsed=JSON.parse(localStorage.getItem(CK)||"{}")||{}}catch(e){collapsed={}};
+}
+
+function down(m){
+  view="down";
+  gate=m||"Can't reach Supabase. Check your configuration and internet connection.";
+  render();
+}
+
+function showAuth(){
+  view="auth";me="";uid="";items=[];subjects=[];render();
+}
+
+function authHtml(){
+  var title=mode==="register"?"Create account":mode==="forgot"?"Reset password":"Sign in";
+  var button=mode==="register"?"Create account":mode==="forgot"?"Send reset link":"Sign in";
+  var password=mode!=="forgot"?'<label for="a-pass">Password</label><input id="a-pass" type="password" autocomplete="'+(mode==="register"?"new-password":"current-password")+'" minlength="8" required>':"";
+  var switcher=mode==="forgot"
+    ?'<button class="linkbtn" type="button" data-auth="login">Back to sign in</button>'
+    :'<button class="linkbtn" type="button" data-auth="switch">'+(mode==="register"?"Already have an account? Sign in":"Create an account")+'</button>';
+  var forgot=mode==="login"?'<button class="linkbtn" type="button" data-auth="forgot">Forgot password?</button>':"";
+  return '<div class="auth">'+
+    '<h2>'+title+'</h2>'+
+    '<p class="sub">Use your Supabase account to access your reviewer shelf.</p>'+
+    (gate?'<div class="err">'+esc(gate)+'</div>':"")+
+    (note?'<div class="note">'+esc(note)+'</div>':"")+
+    '<form id="auth">'+
+      '<label for="a-user">Email</label><input id="a-user" type="email" autocomplete="email" required>'+
+      password+
+      '<button class="btn pri" type="submit">'+button+'</button>'+
+    '</form>'+forgot+switcher+
+    '</div>';
+}
+
+function allSubjects(){
+  return [...new Set(subjects.concat(items.map(function(i){return i.subject}).filter(Boolean)))].sort(function(a,b){return a.localeCompare(b)});
+}
+
+function render(){
+  if(view!=="ready"){
+    document.body.classList.add("locked");
+    $("stats").innerHTML="";
+    $("chips").innerHTML="";
+    $("grid").innerHTML=view==="auth"?authHtml():'<div class="empty"><b class="big">'+esc(gate)+'</b>'+(view==="down"?'Please refresh after checking your Supabase settings.':"")+'</div>';
+    if(view==="auth")setTimeout(function(){var f=$("a-user");if(f)(f.value&&$("a-pass")?$("a-pass"):f).focus()},0);
+    return;
+  }
+
+  document.body.classList.remove("locked");
+  $("acct").innerHTML='Signed in as <b>'+esc(me)+'</b> <button class="btn sm" data-auth="pass">Change password</button> <button class="btn sm" data-auth="logout">Log out</button>';
+
+  var q=$("q").value.trim(),ql=q.toLowerCase();
+  var subs=allSubjects();
+  if(filter!=="All"&&subs.indexOf(filter)<0)filter="All";
+
+  $("chips").innerHTML=["All"].concat(subs).map(function(s){
+    var count=s==="All"?items.length:items.filter(function(i){return i.subject===s}).length;
+    return '<button class="chip" aria-pressed="'+(s===filter)+'" data-s="'+esc(s)+'">'+esc(s)+' <small>'+count+'</small></button>';
+  }).join("");
+
+  $("subjs").innerHTML=subs.map(function(s){return '<option value="'+esc(s)+'">'}).join("");
+
+  var list=items.filter(function(i){
+    if(filter!=="All"&&i.subject!==filter)return false;
+    if(!ql)return true;
+    return [i.title,i.subject,i.body,(i.tags||[]).join(" ")].join(" ").toLowerCase().indexOf(ql)>-1;
+  });
+
+  var sort=$("sort").value;
+  list.sort(function(a,b){
+    if(sort==="az")return (a.title||"").localeCompare(b.title||"");
+    if(sort==="subj")return (a.subject||"").localeCompare(b.subject||") || (a.title||"").localeCompare(b.title||"");
+    return (b.created||0)-(a.created||0);
+  });
+  list.sort(function(a,b){return (b.pin?1:0)-(a.pin?1:0)});
+
+  $("stats").innerHTML=[
+    [subs.length,"subjects"],
+    [items.length,"reviewers"],
+    [items.filter(function(i){return i.pin}).length,"pinned"]
+  ].map(function(a){return '<span class="stat"><b>'+a[0]+'</b> '+a[1]+'</span>'}).join("")+
+  (list.length!==items.length?'<span class="stat on">showing '+list.length+'</span>':"");
+
+  if(!list.length&&(ql||!subs.length)){
+    $("grid").innerHTML='<div class="empty" style="grid-column:1/-1">'+
+      (items.length?'No reviewer matches your search or filter.':'<b class="big">Your shelf is empty</b>Start with <b>Add subject</b> or go straight to <b>Add reviewer</b>.')+
+      '</div>';
+    return;
+  }
+
+  var cardHtml=function(i){
+    var url=safeUrl(i.link||"");
+    return '<article class="item" style="--c:'+color(i.subject)+'" data-id="'+esc(i.id)+'">'+
+      '<div class="top"><h3>'+hl(i.title,q)+'</h3>'+
+      '<button class="pin" data-a="pin" aria-pressed="'+!!i.pin+'" aria-label="'+(i.pin?'Unpin':'Pin to top')+'">'+(i.pin?'★':'☆')+'</button></div>'+
+      '<div class="meta"><span class="pill">'+esc(i.type||"Notes")+'</span>'+
+      ((i.tags||[]).length?'<span>'+i.tags.map(function(t){return "#"+hl(t,q)}).join(" ")+'</span>':"")+
+      '</div>'+
+      (i.body?'<p class="clamp">'+hl(i.body,q)+'</p>':"")+
+      (url?'<a class="open" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Open '+esc(host(url))+'</a>':"")+
+      '<div class="acts">'+
+      (i.body&&i.body.length>140?'<button class="btn sm" data-a="more">Read all</button>':"")+
+      (i.body?'<button class="btn sm" data-a="copy">Copy</button>':"")+
+      '<button class="btn sm" data-a="edit">Edit</button><button class="btn sm" data-a="del">Delete</button>'+
+      '</div></article>';
+  };
+
+  var by={};
+  list.forEach(function(i){(by[i.subject]=by[i.subject]||[]).push(i)});
+  subs.forEach(function(sb){if(!by[sb]&&!ql&&(filter==="All"||filter===sb))by[sb]=[]});
+
+  $("grid").innerHTML=Object.keys(by).sort(function(a,b){return a.localeCompare(b)}).map(function(sub){
+    var all=items.filter(function(i){return i.subject===sub}).length;
+    var shown=by[sub].length;
+    var open=!(collapsed[sub]&&!ql);
+    return '<section class="group" style="--c:'+color(sub)+'" data-sub="'+esc(sub)+'"><div class="gh">'+
+      '<button class="tog" data-g="toggle" aria-expanded="'+open+'"><span aria-hidden="true">'+(open?'▾':'▸')+'</span><span class="gt">'+hl(sub,q)+'</span><span class="gc">'+(shown===all?all:shown+" of "+all)+'</span></button>'+
+      (all===0?'<button class="btn sm" data-g="delsub">Remove</button>':"")+
+      '<button class="btn sm" data-g="addto" aria-label="Add reviewer to '+esc(sub)+'">Add here</button></div>'+
+      (open?(by[sub].length?'<div class="cards">'+by[sub].map(cardHtml).join("")+'</div>':'<p class="none">No reviewers here yet. Select <b>Add here</b> to save one.</p>'):"")+
+      '</section>';
+  }).join("");
+}
+
+function openForm(it){
+  if(view!=="ready")return;
+  editId=it?it.id:null;
+  $("dt").textContent=it?"Edit reviewer":"Add reviewer";
+  $("f-title").value=it?it.title:"";
+  $("f-subj").value=it?it.subject:(filter!=="All"?filter:"");
+  $("f-type").value=it?it.type:"Notes";
+  $("f-link").value=it?it.link||"":"";
+  $("f-body").value=it?it.body||"":"";
+  $("f-tags").value=it?(it.tags||[]).join(", "):"";
+  $("dlg").showModal();
+  $("f-title").focus();
+}
+
+async function pull(){
+  if(!sb||!uid)return;
+  pending++;
+  try{
+    var r=await Promise.all([
+      sb.from("items").select("id,data,updated_at"),
+      sb.from("subjects").select("name")
+    ]);
+    if(r[0].error)throw r[0].error;
+    if(r[1].error)throw r[1].error;
+
+    items=(r[0].data||[]).map(function(x){
+      var d=x.data||{};
+      d.id=x.id;
+      return d;
+    });
+    subjects=(r[1].data||[]).map(function(x){return x.name});
+    view="ready";
+    render();
+  }catch(e){
+    console.error("Supabase load error:",e);
+    if(e&&e.code==="PGRST301")return down("Your Supabase API key/session is invalid.");
+    down("Could not load your shelf: "+msg(e));
+  }finally{pending--}
+}
+
+async function saveItem(it){
+  if(!sb||!uid)throw new Error("Not signed in.");
+  var data=Object.assign({},it);
+  delete data.id;
+  var r=await sb.from("items").upsert({id:it.id,data:data},{onConflict:"user_id,id"});
+  if(r.error)throw r.error;
+}
+
+async function deleteItem(id){
+  var r=await sb.from("items").delete().eq("id",id);
+  if(r.error)throw r.error;
+}
+
+async function addSubjectRemote(name){
+  var r=await sb.from("subjects").upsert({name:name},{onConflict:"user_id,name"});
+  if(r.error)throw r.error;
+}
+
+async function deleteSubjectRemote(name){
+  var r=await sb.from("subjects").delete().eq("name",name);
+  if(r.error)throw r.error;
+}
+
+async function saveCurrentItem(it,oldIt){
+  try{
+    await saveItem(it);
+    if(oldIt&&oldIt.id!==it.id)await deleteItem(oldIt.id);
+    toast("Reviewer saved");
+  }catch(e){
+    console.error(e);
+    toast("Couldn't save: "+msg(e));
+    await pull();
+    throw e;
+  }
+}
+
+async function boot(){
+  loadLocal();
+
+  var cfg=window.SHELF_CONFIG||{};
+  if(!cfg.url||cfg.url.indexOf("PASTE_")===0||!cfg.key||cfg.key.indexOf("PASTE_")===0){
+    down("Supabase is not configured. Open index.html and paste your Project URL and Publishable key.");
+    return;
+  }
+
+  try{
+    sb=window.supabase.createClient(cfg.url,cfg.key);
+  }catch(e){
+    down("Invalid Supabase configuration: "+msg(e));
+    return;
+  }
+
+  try{
+    var sessionResult=await sb.auth.getSession();
+    if(sessionResult.error)throw sessionResult.error;
+
+    var session=sessionResult.data.session;
+    if(session){
+      uid=session.user.id;
+      me=session.user.email||"";
+      view="ready";
+      await pull();
+    }else{
+      mode="login";
+      gate="";note="";
+      showAuth();
+    }
+
+    sb.auth.onAuthStateChange(async function(event,newSession){
+      if(event==="PASSWORD_RECOVERY"){
+        recovering=true;
+        if(newSession){
+          uid=newSession.user.id;
+          me=newSession.user.email||"";
+          view="ready";
+          render();
+          $("pdlg").showModal();
+        }
+        return;
+      }
+      if(event==="SIGNED_IN"&&newSession){
+        uid=newSession.user.id;
+        me=newSession.user.email||"";
+        view="ready";
+        gate="";note="";
+        await pull();
+      }
+      if(event==="SIGNED_OUT"){
+        showAuth();
+      }
+    });
+  }catch(e){
+    console.error(e);
+    down("Supabase connection failed: "+msg(e));
+  }
+}
+
+$("form").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var d={
+    title:$("f-title").value.trim(),
+    subject:$("f-subj").value.trim(),
+    type:$("f-type").value,
+    link:$("f-link").value.trim(),
+    body:$("f-body").value,
+    tags:$("f-tags").value.split(",").map(function(t){return t.trim()}).filter(Boolean)
+  };
+  if(!d.title||!d.subject)return;
+
+  var old=editId?items.find(function(x){return x.id===editId}):null;
+  var item=old?Object.assign({},old,d):Object.assign({},d,{id:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),created:Date.now(),pin:false});
+  items=old?items.map(function(x){return x.id===editId?item:x}):items.concat([item]);
+  render();
+  $("dlg").close();
+
+  try{await saveCurrentItem(item,old)}catch(e){}
+});
+
+$("cancel").onclick=function(){$("dlg").close()};
+$("add").onclick=function(){openForm(null)};
+$("fab").onclick=function(){openForm(null)};
+
+$("addsub").onclick=function(){$("s-name").value="";$("sdlg").showModal();$("s-name").focus()};
+$("scancel").onclick=function(){$("sdlg").close()};
+
+$("sform").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var n=$("s-name").value.trim();
+  if(!n)return;
+  var ex=allSubjects().find(function(x){return x.toLowerCase()===n.toLowerCase()});
+  if(ex){toast('"'+ex+'" already exists');$("sdlg").close();return}
+  subjects.push(n);
+  render();
+  $("sdlg").close();
+  try{
+    await addSubjectRemote(n);
+    toast('Subject "'+n+'" added');
+  }catch(e){
+    subjects=subjects.filter(function(x){return x!==n});
+    render();
+    toast("Couldn't add subject: "+msg(e));
+  }
+});
+
+$("chips").onclick=function(e){
+  var b=e.target.closest(".chip");
+  if(b){filter=b.dataset.s;render()}
+};
+$("q").oninput=render;
+$("sort").onchange=render;
+
+$("grid").onclick=async function(e){
+  var g=e.target.closest("button[data-g]");
+  if(g){
+    var sub=g.closest(".group").dataset.sub;
+    if(g.dataset.g==="toggle"){
+      collapsed[sub]=!collapsed[sub];
+      try{localStorage.setItem(CK,JSON.stringify(collapsed))}catch(x){}
+      render();
+    }else if(g.dataset.g==="delsub"){
+      if(!confirm('Remove empty subject "'+sub+'"?'))return;
+      subjects=subjects.filter(function(x){return x!==sub});
+      render();
+      try{await deleteSubjectRemote(sub);toast('Removed "'+sub+'"')}
+      catch(err){subjects.push(sub);render();toast("Couldn't remove subject: "+msg(err))}
+    }else{
+      openForm(null);
+      $("f-subj").value=sub;
+    }
+    return;
+  }
+
+  var b=e.target.closest("button[data-a]");
+  if(!b)return;
+  var card=b.closest(".item"),id=card.dataset.id,it=items.find(function(x){return x.id===id});
+  if(!it)return;
+
+  if(b.dataset.a==="edit")openForm(it);
+
+  if(b.dataset.a==="pin"){
+    var old=Object.assign({},it);
+    it.pin=!it.pin;
+    render();
+    try{await saveCurrentItem(it,old)}catch(e){it.pin=old.pin;render()}
+  }
+
+  if(b.dataset.a==="copy"){
+    try{
+      await navigator.clipboard.writeText(it.body||"");
+      toast("Notes copied");
+    }catch(e){toast("Copy is blocked here")}
+  }
+
+  if(b.dataset.a==="del"){
+    if(!confirm('Delete "'+it.title+'"?'))return;
+    var ix=items.indexOf(it);
+    items.splice(ix,1);
+    render();
+    try{
+      await deleteItem(id);
+      toast('Deleted "'+it.title+'"');
+    }catch(err){
+      items.splice(ix,0,it);render();toast("Couldn't delete: "+msg(err));
+    }
+  }
+
+  if(b.dataset.a==="more"){
+    var p=card.querySelector("p");
+    var c=p.classList.toggle("clamp");
+    b.textContent=c?"Read all":"Show less";
+  }
+};
+
+$("exp").onclick=function(){
+  var blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="reviewer-shelf-backup.json";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+};
+
+$("imp").onclick=function(){$("file").click()};
+$("file").onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=async function(){
+    try{
+      var data=JSON.parse(r.result);
+      if(!Array.isArray(data))throw new Error("Invalid backup");
+      var existing={};items.forEach(function(i){existing[i.id]=1});
+      var added=0;
+      for(var i=0;i<data.length;i++){
+        var x=data[i];
+        if(x&&x.title&&x.subject){
+          if(!x.id)x.id="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+          if(!x.created)x.created=Date.now();
+          if(!existing[x.id]){
+            await saveItem(x);
+            items.push(x);
+            existing[x.id]=1;
+            added++;
+          }
+        }
+      }
+      render();
+      toast("Imported "+added+" reviewer"+(added===1?"":"s"));
+    }catch(e){
+      console.error(e);
+      toast("Import failed: "+msg(e));
+      await pull();
+    }
+  };
+  r.readAsText(f);this.value="";
+};
+
+document.addEventListener("submit",async function(e){
+  if(e.target.id==="auth"){
+    e.preventDefault();
+    lastUser=$("a-user").value.trim();
+    var p=$("a-pass")?$("a-pass").value:"";
+    gate="";note="";
+    var submit=e.target.querySelector("button[type=submit]");
+    if(submit)submit.disabled=true;
+    try{
+      if(mode==="forgot"){
+        var r=await sb.auth.resetPasswordForEmail(lastUser,{redirectTo:location.origin+location.pathname});
+        if(r.error)throw r.error;
+        note="If that email has an account, a reset link is on its way.";
+      }else if(mode==="register"){
+        var r=await sb.auth.signUp({email:lastUser,password:p,options:{emailRedirectTo:location.origin+location.pathname}});
+        if(r.error)throw r.error;
+        if(!r.data.session){
+          mode="login";
+          note="Check your email and click the confirmation link, then sign in.";
+        }
+      }else{
+        var r=await sb.auth.signInWithPassword({email:lastUser,password:p});
+        if(r.error)throw r.error;
+      }
+    }catch(er){
+      gate=msg(er);
+    }finally{
+      if(submit)submit.disabled=false;
+      render();
+    }
+  }
+
+  if(e.target.id==="pform"){
+    e.preventDefault();
+    var nw=$("p-new").value;
+    if(nw.length<8){toast("Password must be at least 8 characters.");return}
+    try{
+      if(!recovering){
+        var check=await sb.auth.signInWithPassword({email:me,password:$("p-cur").value});
+        if(check.error)throw new Error("Current password is wrong.");
+      }
+      var r=await sb.auth.updateUser({password:nw});
+      if(r.error)throw r.error;
+      recovering=false;
+      $("pdlg").close();
+      toast("Password changed");
+    }catch(er){toast(msg(er))}
+  }
+});
+
+document.addEventListener("click",function(e){
+  if(e.target.id==="pcancel"){recovering=false;$("pdlg").close()}
+  var b=e.target.closest("[data-auth]");
+  if(!b)return;
+  var a=b.dataset.auth;
+  if(a==="switch"){mode=mode==="login"?"register":"login";gate="";note="";render()}
+  if(a==="forgot"){mode="forgot";gate="";note="";render()}
+  if(a==="login"){mode="login";gate="";note="";render()}
+  if(a==="pass"){
+    $("p-cur").value="";
+    $("p-new").value="";
+    $("p-cur").style.display="block";
+    $("p-curl").style.display="block";
+    $("pdlg").showModal();
+  }
+  if(a==="logout")sb.auth.signOut();
+});
+
+$("pdlg").addEventListener("click",function(e){if(e.target===this){recovering=false;this.close()}});
+$("dlg").addEventListener("click",function(e){if(e.target===this)this.close()});
+$("sdlg").addEventListener("click",function(e){if(e.target===this)this.close()});
+
+document.addEventListener("keydown",function(e){
+  var tag=(e.target.tagName||"").toLowerCase();
+  var typing=tag==="input"||tag==="textarea"||tag==="select";
+  if($("dlg").open){
+    if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();$("form").requestSubmit()}
+    return;
+  }
+  if(typing){if(e.key==="Escape")e.target.blur();return}
+  if(e.key==="/"){e.preventDefault();$("q").focus()}
+  if(e.key.toLowerCase()==="n"&&!e.ctrlKey&&!e.metaKey){e.preventDefault();openForm(null)}
+});
+
+window.addEventListener("error",function(e){
+  console.error("App error:",e.error||e.message);
+});
+
+loadLocal();
+render();
+boot();
+
+setInterval(function(){
+  if(view==="ready"&&!pending&&!document.hidden&&!$("dlg").open&&!$("sdlg").open&&!$("pdlg").open)pull();
+},20000);
+
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden&&view==="ready"&&!pending)pull();
+});
+
+})();
+</script>
+</body>
+</html>
+'''
+
+# Fix a typo safely before writing: the subject sort expression above.
+html = html.replace(
+    '(a.subject||"").localeCompare(b.subject||") ||',
+    '(a.subject||"").localeCompare(b.subject||"") ||'
+)
+
+path = Path("/mnt/data/index.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created complete replacement: {path}")
+print(f"Size: {path.stat().st_size:,} bytes")
